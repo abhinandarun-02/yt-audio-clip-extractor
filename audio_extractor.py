@@ -1,6 +1,7 @@
 import yt_dlp
 import ffmpeg
 
+
 def extract_audio_stream(audio_url, start_time, end_time, output_file):
     try:
         (
@@ -12,7 +13,7 @@ def extract_audio_stream(audio_url, start_time, end_time, output_file):
         return output_file
     except ffmpeg.Error as e:
         print(f"An error occurred: {e.stderr.decode()}")
-        raise 
+        raise
 
 
 def get_audio_link(youtube_url):
@@ -22,5 +23,9 @@ def get_audio_link(youtube_url):
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(youtube_url, download=False)
-        audio_url = info['formats'][9]['url']
+        file_formats = info['formats']
+        audio_url = next(file_format['url']
+                         for file_format in file_formats
+                         if file_format.get('ext') == 'm4a'
+                         and file_format.get('format') == '140 - audio only (medium)')
         return audio_url
