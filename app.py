@@ -1,7 +1,7 @@
 import streamlit as st
 import tempfile
 import os
-from audio_extractor import get_audio_link, extract_audio_stream
+from audio_extractor import download_audio, convert_audio
 
 
 st.title("YouTube Audio Clip Extractor 🎵")
@@ -10,8 +10,11 @@ st.write("Enter a YouTube video URL, select start and end times, and download th
 youtube_url = st.text_input("YouTube URL", "")
 start_time = st.number_input("Start Time (in seconds)", min_value=0, step=1, value=0)
 end_time = st.number_input("End Time (in seconds)", min_value=1, step=1, value=10)
+output_file = st.text_input("Output File Name", "audio_clip")
 
 if st.button("Extract Audio"):
+    input_file = output_file + '.webm'
+    output_file += ".mp3"
     if youtube_url.strip() == "":
         st.error("Please provide a valid YouTube URL.")
     elif start_time >= end_time:
@@ -20,14 +23,10 @@ if st.button("Extract Audio"):
         try:
             with st.spinner("Extracting audio..."):
                 # Get audio link
-                audio_url = get_audio_link(youtube_url)
-
-                # Create temporary file
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
-                    output_file = temp_file.name
+                download_audio(youtube_url, start_time, end_time, input_file)
 
                 # Extract audio stream
-                extract_audio_stream(audio_url, start_time, end_time, output_file)
+                convert_audio(input_file, output_file)
 
                 # Provide a download link
                 with open(output_file, "rb") as file:
@@ -35,11 +34,12 @@ if st.button("Extract Audio"):
                     st.download_button(
                         label="Download Audio Clip 🎶",
                         data=file,
-                        file_name="audio_clip.mp3",
+                        file_name=output_file,
                         mime="audio/mpeg",
                     )
 
                 # Clean up
+                os.remove(input_file)
                 os.remove(output_file)
         except Exception as e:
             st.error(f"An error occurred: {e}")
