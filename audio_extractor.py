@@ -11,7 +11,7 @@ def extract_audio_stream(audio_url, start_time, end_time, output_file):
         )
         return output_file
     except ffmpeg.Error as e:
-        st.error(f"An error occurred: {e.stderr.decode()}")
+        print(f"An error occurred: {e.stderr.decode()}")
         raise 
 
 
